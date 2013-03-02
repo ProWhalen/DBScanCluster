@@ -25,7 +25,7 @@ public class ReadCSV {
 		ArrayList<TwoDimPoint>allPoint=new ArrayList<>();
 		FileReader fr     = new FileReader (path);
 		BufferedReader  br    = new BufferedReader(fr);
-		
+		int count=0;
 		String line;
 		while((line=br.readLine())!=null)
 		{
@@ -33,7 +33,7 @@ public class ReadCSV {
 				
 			
 			String [] array = line.split(",");
-			TwoDimPoint tdp = new TwoDimPoint(Double.parseDouble(array[0]), Double.parseDouble(array[1]));
+			TwoDimPoint tdp = new TwoDimPoint(Double.parseDouble(array[0]), Double.parseDouble(array[1]),++count);
 			allPoint.add(tdp);
 			} catch (NumberFormatException e) {
 				// TODO: handle exception

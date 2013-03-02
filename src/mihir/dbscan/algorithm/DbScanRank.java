@@ -1,31 +1,52 @@
+/**
+ * 
+ */
 package mihir.dbscan.algorithm;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import mihir.dbscan.param.DbScanParam;
-import mihir.dbscan.data.TwoDimPoint;
-import mihir.dbscan.getdatabase.ReadCSV;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import mihir.dbscan.data.TwoDimPoint;
+import mihir.dbscan.getdatabase.ReadCSV;
+import mihir.dbscan.param.DbScanParam;
 
-public class Dbscan {
-	
+public class DbScanRank {
+
 	DbScanParam dbparam;//parameters for dbscan
-	ArrayList<TwoDimPoint>points;
-	private static final int NOT_VISITED = -1000000;
 	public static final int NOISE = -2000000;
-	int noOfCluster=0;
+	private static final int NOT_VISITED = -1000000;
+	int noOfClusters=0;
+	int initialTempId;
+	int [] notInclude;
+	//TwoDimPoint notInclude;
+	//int index;
+	ArrayList<TwoDimPoint>points;
 	
-	public Dbscan(double epsilon,int minPts,int minClusterSize,String filePath) throws FileNotFoundException, IOException {
+	/**
+	 * 
+	 * @param epsilon
+	 * @param minPts
+	 * @param minClusterSize
+	 * @param filePath
+	 * @param notInclude integer array containing ids of all points not to be included in DBScan 
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+
+	public DbScanRank(double epsilon,int minPts,int minClusterSize,String filePath,int [] notInclude) throws FileNotFoundException, IOException {
 		// intialises parameters and input by reading csv file
 		
 		dbparam=new DbScanParam(epsilon, minPts,minClusterSize);
 		ReadCSV readcsv = new ReadCSV(filePath);
 		points= readcsv.ReadTable();	
-		
-		
+		this.notInclude = new int [notInclude.length];
+		this.notInclude=notInclude;
+		// System.out.println(":::::::::::::::::::"+this.notInclude.length);
+		// System.out.println("::::::::::::::::::"+this.notInclude[0]);
+		 
 		int t=points.size();
 		for (int i = 0; i < t; i++)
 			{
@@ -33,7 +54,23 @@ public class Dbscan {
 			  ArrayList<TwoDimPoint>tmp;
 			  tmp=CalNearestNeighbourEps(this.points.get(i));
 			  this.points.get(i).setNearestList(tmp);
+			  
 			}
+		Collections.sort(points,new Comparator<TwoDimPoint>()
+				{
+
+					@Override
+					public int compare(TwoDimPoint p1,
+							TwoDimPoint p2) {
+						return Integer.valueOf(p1.getId()).compareTo(Integer.valueOf(p2.getId()));
+		
+					}
+			
+			
+				});
+		
+		//points.remove(index);
+		
 	}
 	
 	public ArrayList<TwoDimPoint> getPoints() {
@@ -45,7 +82,7 @@ public class Dbscan {
 		// now scan the points in the data-set point by point 
 		for (int i = 0; i < n; i++) {
 			TwoDimPoint p = points.get(i);
-			if (p.getClusterId() == NOT_VISITED) {
+			if (p.getClusterId() == NOT_VISITED && CheckId(p.getId(),notInclude)) {
 				// get the nearest points to the point 'p'
 				// within the range defined by radius 'epsilon'
 				ArrayList<TwoDimPoint> nearest = p.getNearestList();
@@ -57,7 +94,7 @@ public class Dbscan {
 					// to include the points that are directly-reachable by
 					// the points in the neighborhood of 'p'
 					cluster++;
-					noOfCluster=cluster;
+					noOfClusters=cluster;
 					p.setClusterId(cluster);
 					ExpandCluster(nearest, p.getId(), cluster);
 				}
@@ -91,49 +128,41 @@ public class Dbscan {
 	}
 	public ArrayList<TwoDimPoint> CalNearestNeighbourEps(TwoDimPoint tdp)
 	{
-		ArrayList<TwoDimPoint>nearest = new ArrayList<>();
+		ArrayList<TwoDimPoint>nearest = new ArrayList<TwoDimPoint>();
 		int n=points.size();
 		double eps =dbparam.getEpsilon();
 		for(int i=0;i<n;i++)
 		{
 			TwoDimPoint tmp=points.get(i);
-			if(tmp.getId()!=tdp.getId())
+			// System.out.println(notInclude[0]);
+			if(tmp.getId()!=tdp.getId() && CheckId(tmp.getId(),notInclude))
 			{
-				double dist;
-				if((dist=TwoDimPoint.EuclideanDistance(tmp, tdp))<=eps)
+				if(TwoDimPoint.EuclideanDistance(tmp, tdp)<=eps)
 				{
 					nearest.add(tmp);
-					tmp.setTmp_distance(dist);
 				}
 			}
 		}
-		Collections.sort(nearest,new Comparator<TwoDimPoint>()
-				{
-
-					@Override
-					public int compare(TwoDimPoint p1,
-							TwoDimPoint p2) {
-						return Integer.valueOf(p1.getNoOfNearestNeighbour()).compareTo(Integer.valueOf(p2.getNoOfNearestNeighbour()));
-					}
-			
-			
-				});
-		
 		return nearest;
 		
 	}
 
-/**
- * @return the noOfCluster
+ private boolean CheckId (int id,int [] arr_id)
+ {
+	 boolean flag=true;
+	 for (int i=0;i<arr_id.length;i++)
+	 {
+		 if(arr_id[i]==id)
+			 return false;
+	 }
+	 return true;
+ }
+	
+ /**
+ * @return the noOfClusters
  */
-public int getNoOfCluster() {
-	return noOfCluster;
+public int getNoOfClusters() {
+	return noOfClusters;
 }
 	
-	
-	
-	
-	
-	
-	//implement DBScan Algorithm
 }

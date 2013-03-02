@@ -5,16 +5,28 @@ import java.util.ArrayList;
 public class TwoDimPoint {
 	private double x,y;
 	private static double dist=0;
+	private double tmp_distance;
 	private int clusterId = 0;
 	private int id;
-	private static int count=0;
 	private ArrayList<TwoDimPoint> nearestList;//contains Id of nearest points under epsilon
 	int noOfNearestNeighbour;
-	public TwoDimPoint(double x,double y) {
+	double rank=0;
+	public TwoDimPoint(double x,double y,int id) {
 		// set points value
 		this.x=x;
 		this.y=y;
-		this.id=++count;
+		this.id=id;
+		this.rank=0;
+		}
+	public TwoDimPoint(int id,double x,double y,int clusterId,ArrayList<TwoDimPoint> nearestList,int noOfNearestNeighbour,int rank)
+	{
+		this.x=x;
+		this.y=y;
+		this.id=id;
+		this.rank=0;
+		this.clusterId=0;
+		this.nearestList = nearestList;
+		this.noOfNearestNeighbour= noOfNearestNeighbour;
 	}
 	
 	public void setId(int id) {
@@ -54,6 +66,22 @@ public class TwoDimPoint {
 	public ArrayList<TwoDimPoint> getNearestList() {
 		return nearestList;
 	}
+	/**
+	 * @param rank the rank to set
+	 */
+	public void setRank(double rank) {
+		this.rank = rank;
+	}
+	
+	/**
+	 * @return the rank
+	 */
+	public double getRank() {
+		return rank;
+	}
+	/**
+	 * @param tempClusterId the tempClusterId to set
+	 */
 	//calculates Euclidean distance.More Distance functions can be added
 	static public double EuclideanDistance(TwoDimPoint X1,TwoDimPoint X2)
 	{
@@ -62,7 +90,19 @@ public class TwoDimPoint {
 		
 	}
 
+/**
+ * @param tmp_distance the tmp_distance to set
+ */
+public void setTmp_distance(double tmp_distance) {
+	this.tmp_distance = tmp_distance;
+}
 	
-	
+
+/**
+ * @return the tmp_distance
+ */
+public double getTmp_distance() {
+	return tmp_distance;
+}
 
 }
